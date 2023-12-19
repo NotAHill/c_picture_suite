@@ -14,4 +14,4 @@ $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(TARGET) *.o core
+	rm -rf $(TARGET) *.o core images/bmp/out.bmp

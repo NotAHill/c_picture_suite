@@ -1,5 +1,6 @@
 #include "picture.h"
 #include "bmp.h"
+#include "colour.h"
 
 #include <stdio.h>
 
@@ -14,6 +15,12 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	print_picture(pic);
+
+	if (argc == 1) {
+		pic->rgb[0] = (struct rgb) {128, 128, 128};
+		to_bmp(pic, "./images/bmp/out.bmp");
+	}
+
 	free_picture(pic);
 	return 0;
 }

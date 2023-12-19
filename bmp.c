@@ -157,7 +157,7 @@ void to_bmp(struct picture *pic, char *path) {
 		uint16_t color_plane_count;
 		uint16_t bits_per_pixel;
 		uint32_t pixel_compression;
-		uint32_t pixel_array_size;
+		uint32_t pixel_data_size;
 		uint32_t print_res_horizontal;
 		uint32_t print_res_vertical;
 		uint32_t palette_colour_count;
@@ -174,7 +174,13 @@ void to_bmp(struct picture *pic, char *path) {
 	dib_header.color_plane_count = 1;
 	dib_header.bits_per_pixel = pic->type;
 	dib_header.pixel_compression = 0;
-	dib_header.pixel_array_size = pic->width * pic->height;
+	
+	if (pic->type == RGBA)
+		dib_header.pixel_data_size = pic->width * pic->height * (pic->type / 8);
+	else {
+		dib_header.pixel_data_size = pic->width * pic->height * (pic->type / 8 + 1);
+	}
+
 	dib_header.print_res_horizontal = 2835;
 	dib_header.print_res_vertical = 2835;
 	dib_header.palette_colour_count = 0;
@@ -192,8 +198,9 @@ void to_bmp(struct picture *pic, char *path) {
 	write_attr(dib_header.color_plane_count);
 	write_attr(dib_header.bits_per_pixel);
 	write_attr(dib_header.pixel_compression);
-	write_attr(dib_header.pixel_array_size);
+	write_attr(dib_header.pixel_data_size);
 	write_attr(dib_header.print_res_horizontal);
+	write_attr(dib_header.print_res_vertical);
 	write_attr(dib_header.palette_colour_count);
 	write_attr(dib_header.important_colour_count);
 
