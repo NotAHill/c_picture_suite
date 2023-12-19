@@ -14,6 +14,12 @@ struct rgba {
 	uint8_t alpha;
 };
 
+struct rgb {
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
+};
+
 struct rgba to_rgba(uint32_t val) {
 	static const uint32_t mask = 0x000000ff;
 	struct rgba res;
@@ -27,6 +33,22 @@ struct rgba to_rgba(uint32_t val) {
 	return res;
 }
 
+struct rgb to_rgb(uint32_t val) {
+	static const uint32_t mask = 0x000000ff;
+	struct rgba res;
+	res.blue = mask & val;
+	val >>= 8;
+	res.green = mask & val;
+	val >>= 8;
+	res.red = mask & val;
+	return res;
+}
+
+uint32_t from_rgb(struct rgb col) {
+	return (uint32_t)0 + col.red + col.green << 8 + col.blue << 16;
+}
+
+
 void print_rgba(struct rgba *col) {
 	printf("(%u, %u, %u, %u)", col->red, col->green, col->blue, col->alpha);
 }
@@ -39,8 +61,27 @@ struct bmp {
 	uint32_t *pixel_array;
 };
 
+struct picture {
+	struct rgb *data;
+	int width;
+	int height;
+}
 
-void process_bmp(char *path) {
+struct picture *create_picture(int width, int height) {
+	struct picture *res = malloc(sizeof(struct picture));
+	res->data = malloc(sizeof(struct rgb) * img_size);
+	res->width = width;
+	res->height = height;
+	return res;
+}
+
+void free_picture(struct picture *pic) {
+	free(pic->data);
+	free(pic);
+}
+
+
+struct picture *from_bmp(char *path) {
 	FILE *file;
 
 	file = fopen(path, "r");
@@ -81,50 +122,70 @@ void process_bmp(char *path) {
 
 	int img_size = img.width * abs(img.height);
 	int bytes_per_pixel = img.bits_per_pixel / 8;
-
+	
+	img.pixel_array = calloc(img_size, sizeof(uint32_t));
 
 	if (bytes_per_pixel == 3) {
-		img.pixel_array = calloc(img_size, sizeof(uint32_t));
 		for (int i = 0; i < img_size; i += 2) {
 			fread(img.pixel_array + i, bytes_per_pixel, 1, file);
 			fread(img.pixel_array + i + 1, bytes_per_pixel, 1, file);
 			fseek(file, 0x2, SEEK_CUR);
 		}
 	} else if (bytes_per_pixel == 4) {
-		img.pixel_array = calloc(img_size, sizeof(uint32_t));
 		fread(img.pixel_array, bytes_per_pixel, img_size, file);
 	} else {
 		fprintf(stderr, "Error: Current BBP not supported yet\n");
 		fclose(file);
+		free(img.pixel_array);
 		exit(EXIT_FAILURE);
 	}
-
+	
+	struct picture *res = create_picture(img.width, img.height);
+	
 	if (img.height < 0) {
 		for (int i = 0; i < img.height; i++) {
 			for (int j = 0; j < img.width; j++) {
-				struct rgba col = to_rgba(img.pixel_array[i * img.width + j]);
-				print_rgba(&col);
-				printf(" ");
+				res->data[i * img.width + j] = to_rgba(img.pixel_array[i * img.width + j]);
 			}
-			printf("\n");
 		}
 	} else {
 		// picture is upside down
 		for (int i = 0; i < img.height; i++) {
 			for (int j = 0; j < img.width; j++) {
-				struct rgba col = to_rgba(img.pixel_array[(img.height - i - 1) * img.width + j]);
-				print_rgba(&col);
-				printf(" ");
+				res->data[i * img.width + j] = to_rgba(img.pixel_array[i * img.width + j]);
 			}
-			printf("\n");
 		}
 	}
-
+	
 	fclose(file);
 	free(img.pixel_array);
+
+	return res;
+
 }
 
+void print_rgb(struct rgb *col) {
+	printf("(%u, %u, %u)", col->red, col->green, col->blue);
+}
+
+void print_rgba(struct rgba *col) {
+	printf("(%u, %u, %u, %u)", col->red, col->green, col->blue, col->alpha);
+}
+
+void print_picture(struct picture *pic) {
+	for (int i = 0; i < pic.height; i++) {
+		for (int j = 0; j < pic.width; j++) {
+			print_rgb(&pic.data[i * pic.width + j]);
+			printf(" ");
+		}
+		printf("\n");
+	}
+}
+
+
 int main(void) {
-	process_bmp("./images/test.bmp");
+	struct picture *pic = from_bmp("./images/test.bmp");
+	print_picture(pic);
+	free_picture(pic);
 	return 0;
 }
