@@ -20,3 +20,6 @@ ffff ffff = ff ff ff ff
 00ff 0000 = ff 00 00 00
 00ff 0000 = ff 00 00 00
 ffff ffff = ff ff ff ff
+
+bcbc 00ff = bc bc ff 00 = 
+ffbc 00bc = bc ff bc 00

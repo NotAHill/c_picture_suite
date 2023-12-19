@@ -26,8 +26,12 @@ struct rgb to_rgb(uint32_t val) {
 	return res;
 }
 
-uint32_t from_rgb(struct rgb col) {
-	return (uint32_t)0 + col.red + (col.green << 8) + (col.blue << 16);
+uint32_t from_rgb(struct rgb *col) {
+	return (uint32_t)0 + col->red + (col->green << 8) + (col->blue << 16);
+}
+
+uint32_t from_rgba(struct rgba *col) {
+	return (uint32_t)0 + col->alpha + (col->red << 8) + (col->green << 16) + (col->blue << 24);
 }
 
 void print_rgb(struct rgb *col) {

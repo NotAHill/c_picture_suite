@@ -20,8 +20,8 @@
 #define BMP_BITS_PER_PIXEL_LOC 0x1c
 #define BMP_BITS_PER_PIXEL_SIZE 2
 
-static FILE *open_file(char *path) {
-	FILE *file = fopen(path, "r");
+static FILE *open_file(char *path, char *mode) {
+	FILE *file = fopen(path, mode);
 	if (file == NULL) {
 		perror("Couldn't open file");
 		exit(EXIT_FAILURE);
@@ -116,7 +116,7 @@ static void populate_picture_array(struct picture *pic, struct bmp *img) {
 }
 
 struct picture *from_bmp(char *path) {
-	FILE *file = open_file(path);
+	FILE *file = open_file(path, "r");
 
 	verify_bmp_signature(file);
 
@@ -129,4 +129,95 @@ struct picture *from_bmp(char *path) {
 	populate_picture_array(res, &img);
 
 	return res;
+}
+
+#define UNUSED(type) (type){0}
+#define BMP_HEADER_SIZE 14
+#define DIB_HEADER_SIZE 40
+
+#define write_attr(val) fwrite(&val, sizeof(val), 1, file)
+
+void to_bmp(struct picture *pic, char *path) {
+	FILE *file = open_file(path, "w");
+
+	// needs to have the following parts
+	// bitmap file header
+	// 14 bytes
+
+	struct {
+		char id[BMP_ID_SIZE];
+		uint32_t bmp_size;
+		uint32_t pixel_array_offset;
+	} bmp_header;
+
+	struct {
+		uint32_t dib_size;
+		uint32_t bmp_width;
+		uint32_t bmp_height;
+		uint16_t color_plane_count;
+		uint16_t bits_per_pixel;
+		uint32_t pixel_compression;
+		uint32_t pixel_array_size;
+		uint32_t print_res_horizontal;
+		uint32_t print_res_vertical;
+		uint32_t palette_colour_count;
+		uint32_t important_colour_count;
+	} dib_header;
+
+	bmp_header.id[0] = 'B';	bmp_header.id[1] = 'M';
+	bmp_header.bmp_size = BMP_HEADER_SIZE + DIB_HEADER_SIZE + pic->width * pic->height;
+	bmp_header.pixel_array_offset = BMP_HEADER_SIZE + DIB_HEADER_SIZE;
+
+	dib_header.dib_size = DIB_HEADER_SIZE;
+	dib_header.bmp_width = pic->width;
+	dib_header.bmp_height = pic->height;
+	dib_header.color_plane_count = 1;
+	dib_header.bits_per_pixel = pic->type;
+	dib_header.pixel_compression = 0;
+	dib_header.pixel_array_size = pic->width * pic->height;
+	dib_header.print_res_horizontal = 2835;
+	dib_header.print_res_vertical = 2835;
+	dib_header.palette_colour_count = 0;
+	dib_header.important_colour_count = 0;
+
+	write_attr(bmp_header.id);
+	write_attr(bmp_header.bmp_size);
+	write_attr(UNUSED(uint16_t));
+	write_attr(UNUSED(uint16_t));
+	write_attr(bmp_header.pixel_array_offset);
+
+	write_attr(dib_header.dib_size);
+	write_attr(dib_header.bmp_width);
+	write_attr(dib_header.bmp_height);
+	write_attr(dib_header.color_plane_count);
+	write_attr(dib_header.bits_per_pixel);
+	write_attr(dib_header.pixel_compression);
+	write_attr(dib_header.pixel_array_size);
+	write_attr(dib_header.print_res_horizontal);
+	write_attr(dib_header.palette_colour_count);
+	write_attr(dib_header.important_colour_count);
+
+	int data_size = dib_header.bits_per_pixel / 8;
+	int index;
+	uint32_t raw;
+	int counter = 0;
+
+	for (int i = 0; i < pic->height; i++) {
+		for (int j = 0; j < pic->width; j++) {
+			index = (pic->height - i - 1) * pic->width + j;
+			if (pic->type == RGBA) raw = from_rgba(&pic->rgba[index]);
+			else raw = from_rgb(&pic->rgb[index]);
+			
+			fwrite(&raw, data_size, 1, file);
+
+			if (pic->type == RGB && ++counter == 2) {
+				write_attr(UNUSED(uint16_t));
+				counter = 0;
+			}
+		}
+	}
+
+	fclose(file);
+
+
 }

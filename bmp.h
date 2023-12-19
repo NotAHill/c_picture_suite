@@ -16,5 +16,6 @@ struct bmp {
 };
 
 struct picture *from_bmp(char *);
+void to_bmp(struct picture *, char *);
 
 #endif //BMP_H

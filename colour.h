@@ -19,7 +19,8 @@ struct rgb {
 struct rgba to_rgba(uint32_t);
 struct rgb to_rgb(uint32_t);
 
-uint32_t from_rgb(struct rgb);
+uint32_t from_rgb(struct rgb *);
+uint32_t from_rgba(struct rgba *);
 
 void print_rgba(struct rgba *);
 void print_rgb(struct rgb *);
