@@ -1,6 +1,6 @@
-#!/usr/bin/sh
+#!/bin/sh
 
-rm -rf main *.o core
-gcc -g main.c -Wall -Wextra -Werror -pedantic -o main
+make clean
+make
 ./main
 

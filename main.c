@@ -35,7 +35,7 @@ struct rgba to_rgba(uint32_t val) {
 
 struct rgb to_rgb(uint32_t val) {
 	static const uint32_t mask = 0x000000ff;
-	struct rgba res;
+	struct rgb res;
 	res.blue = mask & val;
 	val >>= 8;
 	res.green = mask & val;
@@ -45,12 +45,7 @@ struct rgb to_rgb(uint32_t val) {
 }
 
 uint32_t from_rgb(struct rgb col) {
-	return (uint32_t)0 + col.red + col.green << 8 + col.blue << 16;
-}
-
-
-void print_rgba(struct rgba *col) {
-	printf("(%u, %u, %u, %u)", col->red, col->green, col->blue, col->alpha);
+	return (uint32_t)0 + col.red + (col.green << 8) + (col.blue << 16);
 }
 
 struct bmp {
@@ -65,11 +60,11 @@ struct picture {
 	struct rgb *data;
 	int width;
 	int height;
-}
+};
 
 struct picture *create_picture(int width, int height) {
 	struct picture *res = malloc(sizeof(struct picture));
-	res->data = malloc(sizeof(struct rgb) * img_size);
+	res->data = malloc(sizeof(struct rgb) * width * height);
 	res->width = width;
 	res->height = height;
 	return res;
@@ -145,14 +140,14 @@ struct picture *from_bmp(char *path) {
 	if (img.height < 0) {
 		for (int i = 0; i < img.height; i++) {
 			for (int j = 0; j < img.width; j++) {
-				res->data[i * img.width + j] = to_rgba(img.pixel_array[i * img.width + j]);
+				res->data[i * img.width + j] = to_rgb(img.pixel_array[i * img.width + j]);
 			}
 		}
 	} else {
 		// picture is upside down
 		for (int i = 0; i < img.height; i++) {
 			for (int j = 0; j < img.width; j++) {
-				res->data[i * img.width + j] = to_rgba(img.pixel_array[i * img.width + j]);
+				res->data[i * img.width + j] = to_rgb(img.pixel_array[i * img.width + j]);
 			}
 		}
 	}
@@ -173,9 +168,9 @@ void print_rgba(struct rgba *col) {
 }
 
 void print_picture(struct picture *pic) {
-	for (int i = 0; i < pic.height; i++) {
-		for (int j = 0; j < pic.width; j++) {
-			print_rgb(&pic.data[i * pic.width + j]);
+	for (int i = 0; i < pic->height; i++) {
+		for (int j = 0; j < pic->width; j++) {
+			print_rgb(&pic->data[i * pic->width + j]);
 			printf(" ");
 		}
 		printf("\n");
@@ -184,7 +179,7 @@ void print_picture(struct picture *pic) {
 
 
 int main(void) {
-	struct picture *pic = from_bmp("./images/test.bmp");
+	struct picture *pic = from_bmp("./images/bmp/test.bmp");
 	print_picture(pic);
 	free_picture(pic);
 	return 0;
