@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -Wall -Werror -Wextra -pedantic
 TARGET = main
-SRC = main.c
+SRC = main.c bmp.c colour.c picture.c
 OBJ = $(SRC:.c=.o)
 
 all: $(TARGET)
