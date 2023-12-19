@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 #define BUFSIZE 1000
 
@@ -106,6 +107,12 @@ struct picture *from_bmp(char *path) {
 	fread(&img.width, 4, 1, file);
 	fread(&img.height, 4, 1, file);
 	
+	bool flipped = true;
+	if (img.height < 0) {
+		flipped = false;
+		img.height *= -1;
+	}
+
 	printf("Width: %d, Height: %d\n", img.width, img.height);
 
 	fseek(file, 0x1c, SEEK_SET);
@@ -137,14 +144,13 @@ struct picture *from_bmp(char *path) {
 	
 	struct picture *res = create_picture(img.width, img.height);
 	
-	if (img.height < 0) {
+	if (flipped) {
 		for (int i = 0; i < img.height; i++) {
 			for (int j = 0; j < img.width; j++) {
-				res->data[i * img.width + j] = to_rgb(img.pixel_array[i * img.width + j]);
+				res->data[i * img.width + j] = to_rgb(img.pixel_array[(img.height - i - 1) * img.width + j]);
 			}
 		}
 	} else {
-		// picture is upside down
 		for (int i = 0; i < img.height; i++) {
 			for (int j = 0; j < img.width; j++) {
 				res->data[i * img.width + j] = to_rgb(img.pixel_array[i * img.width + j]);
