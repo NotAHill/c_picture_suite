@@ -20,16 +20,17 @@
 #define BMP_BITS_PER_PIXEL_LOC 0x1c
 #define BMP_BITS_PER_PIXEL_SIZE 2
 
-static void open_file(FILE *file, char *path) {
-	file = fopen(path, "r");
+static FILE *open_file(char *path) {
+	FILE *file = fopen(path, "r");
 	if (file == NULL) {
 		perror("Couldn't open file");
 		exit(EXIT_FAILURE);
 	}
+	return file;
 }
 
 static void verify_bmp_signature(FILE *file) {
-	char buffer[BMP_ID_SIZE];
+	char buffer[BMP_ID_SIZE + 100];
 
 	if (fread(buffer, 1, BMP_ID_SIZE, file) != BMP_ID_SIZE || strncmp(buffer, "BM", BMP_ID_SIZE) != 0) {
 		fprintf(stderr, "Error: not a valid BMP file\n");
@@ -117,9 +118,7 @@ static void populate_picture_array(struct picture *pic, struct bmp *img) {
 }
 
 struct picture *from_bmp(char *path) {
-	FILE *file = NULL;
-
-	open_file(file, path);
+	FILE *file = open_file(path);
 
 	verify_bmp_signature(file);
 
