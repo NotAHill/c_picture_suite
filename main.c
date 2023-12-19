@@ -7,22 +7,20 @@
 
 int main(int argc, char *argv[]) {
 	struct picture *pic;
-	if (argc == 1) {
-		pic = from_bmp("./images/bmp/test.bmp");
-	} else if (argc == 2) {
+	if (argc == 3) {
 		pic = from_bmp(argv[1]);
 	} else {
-		fprintf(stderr, "Please enter only 1 command line argument\n");
+		fprintf(stderr, "Invalid command line args\n");
 		return 1;
 	}
+	
+	print_picture(pic);
+	invert(pic);
 	print_picture(pic);
 
-	if (argc == 1) {
-		//pic->rgb[0] = (struct rgb) {128, 128, 128};
-		invert(pic);
-		to_bmp(pic, "./images/bmp/out.bmp");
-	}
+	to_bmp(pic, argv[2]);
 
 	free_picture(pic);
+
 	return 0;
 }

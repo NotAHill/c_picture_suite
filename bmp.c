@@ -107,8 +107,7 @@ static void populate_picture_array(struct picture *pic, struct bmp *img) {
 		for (int j = 0; j < img->width; j++) {
 			index = (img->flipped) ? img->height - i - 1 : i;
 			cur = img->pixel_array[index * img->width + j];
-			if (pic->type == RGBA) pic->rgba[i * img->width + j] = to_rgba(cur);
-			else pic->rgb[i * img->width + j] = to_rgb(cur);
+			pic->data[i * img->width + j] = (pic->type == RGBA) ? to_rgba(cur) : to_rgb(cur);
 		}
 	}
 	
@@ -131,7 +130,7 @@ struct picture *from_bmp(char *path) {
 	return res;
 }
 
-#define UNUSED(type) (type){0}
+#define EMPTY(type) (type){0}
 #define BMP_HEADER_SIZE 14
 #define DIB_HEADER_SIZE 40
 
@@ -173,9 +172,8 @@ void to_bmp(struct picture *pic, char *path) {
 	
 	if (pic->type == RGBA)
 		dib_header.pixel_data_size = pic->width * pic->height * (pic->type / 8);
-	else {
+	else
 		dib_header.pixel_data_size = pic->width * pic->height * (pic->type / 8 + 1);
-	}
 
 	dib_header.print_res_horizontal = 2835;
 	dib_header.print_res_vertical = 2835;
@@ -184,8 +182,8 @@ void to_bmp(struct picture *pic, char *path) {
 
 	write_attr(bmp_header.id);
 	write_attr(bmp_header.bmp_size);
-	write_attr(UNUSED(uint16_t));
-	write_attr(UNUSED(uint16_t));
+	write_attr(EMPTY(uint16_t));
+	write_attr(EMPTY(uint16_t));
 	write_attr(bmp_header.pixel_array_offset);
 
 	write_attr(dib_header.dib_size);
@@ -201,20 +199,19 @@ void to_bmp(struct picture *pic, char *path) {
 	write_attr(dib_header.important_colour_count);
 
 	int data_size = dib_header.bits_per_pixel / 8;
-	int index;
 	uint32_t raw;
+	struct rgba *col;
 	int counter = 0;
 
 	for (int i = 0; i < pic->height; i++) {
 		for (int j = 0; j < pic->width; j++) {
-			index = (pic->height - i - 1) * pic->width + j;
-			if (pic->type == RGBA) raw = from_rgba(&pic->rgba[index]);
-			else raw = from_rgb(&pic->rgb[index]);
+			col = &pic->data[(pic->height - i - 1) * pic->width + j];
+			raw = (pic->type == RGBA) ? from_rgba(col) : from_rgb(col);
 			
 			fwrite(&raw, data_size, 1, file);
 
 			if (pic->type == RGB && ++counter == 2) {
-				write_attr(UNUSED(uint16_t));
+				write_attr(EMPTY(uint16_t));
 				counter = 0;
 			}
 		}

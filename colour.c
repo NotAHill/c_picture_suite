@@ -15,26 +15,27 @@ struct rgba to_rgba(uint32_t val) {
 	return res;
 }
 
-struct rgb to_rgb(uint32_t val) {
+struct rgba to_rgb(uint32_t val) {
 	static const uint32_t mask = 0x000000ff;
-	struct rgb res;
+	struct rgba res;
 	res.blue = mask & val;
 	val >>= 8;
 	res.green = mask & val;
 	val >>= 8;
 	res.red = mask & val;
+	res.alpha = 0;
 	return res;
 }
 
-uint32_t from_rgb(struct rgb *col) {
-	return (uint32_t)0 + col->red + (col->green << 8) + (col->blue << 16);
+uint32_t from_rgb(struct rgba *col) {
+	return (uint32_t)0 + col->blue + (col->green << 8) + (col->red << 16);
 }
 
 uint32_t from_rgba(struct rgba *col) {
-	return (uint32_t)0 + col->alpha + (col->red << 8) + (col->green << 16) + (col->blue << 24);
+	return (uint32_t)0 + col->blue + (col->green << 8) + (col->red << 16) + (col->alpha << 24);
 }
 
-void print_rgb(struct rgb *col) {
+void print_rgb(struct rgba *col) {
 	printf("(%u, %u, %u)", col->red, col->green, col->blue);
 }
 

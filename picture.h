@@ -6,10 +6,7 @@ struct picture {
 		RGB = 24,
 		RGBA = 32
 	} type;
-	union {
-		struct rgba *rgba;
-		struct rgb *rgb;
-	};
+	struct rgba *data;
 	int width;
 	int height;
 };
