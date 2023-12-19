@@ -1,0 +1,22 @@
+The actual pixel is as follows
+gb
+rw
+
+from hexdump we have the following:
+MB
+0036 0000 = 54 byte offset for rgb data
+0028 0000 = 28 00 00 00 = 40 bytes for dob header
+0002 0000 = 02 00 00 00 = 2 bytes for width (and also for height)
+0000 ffff = (00 00 ff) (ff) = red
+ffff 0000 = (ff ff) (00 00) = white + boundary
+ff00 ff00 = (00 ff 00) (ff) = green
+0000 0000 = (00 00) (00 00) = blue + boundary
+
+0036 0000 = 36 00 00 00 = 36 byte offset
+0018 = 18 00 = 24 BBP
+7fff 7f7f = ff 7f 7f 7f = (128, 128, 128, 255) 
+7fff 7f7f = ff 7f 7f 7f = ???
+ffff ffff = ff ff ff ff 
+00ff 0000 = ff 00 00 00
+00ff 0000 = ff 00 00 00
+ffff ffff = ff ff ff ff
