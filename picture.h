@@ -2,12 +2,19 @@
 #define PICTURE_H
 
 struct picture {
-	struct rgb *data;
+	enum {
+		RGB = 24,
+		RGBA = 32
+	} type;
+	union {
+		struct rgba *rgba;
+		struct rgb *rgb;
+	};
 	int width;
 	int height;
 };
 
-struct picture *create_picture(int, int);
+struct picture *create_picture(int, int, int);
 void free_picture(struct picture *);
 
 void print_picture(struct picture *);

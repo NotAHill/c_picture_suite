@@ -100,17 +100,15 @@ static void read_bmp_data(FILE *file, struct bmp *img) {
 }
 
 static void populate_picture_array(struct picture *pic, struct bmp *img) {
-	if (img->flipped) {
-		for (int i = 0; i < img->height; i++) {
-			for (int j = 0; j < img->width; j++) {
-				pic->data[i * img->width + j] = to_rgb(img->pixel_array[(img->height - i - 1) * img->width + j]);
-			}
-		}
-	} else {
-		for (int i = 0; i < img->height; i++) {
-			for (int j = 0; j < img->width; j++) {
-				pic->data[i * img->width + j] = to_rgb(img->pixel_array[i * img->width + j]);
-			}
+	int index;
+	uint32_t cur;
+
+	for (int i = 0; i < img->height; i++) {
+		for (int j = 0; j < img->width; j++) {
+			index = (img->flipped) ? img->height - i - 1 : i;
+			cur = img->pixel_array[index * img->width + j];
+			if (pic->type == RGBA) pic->rgba[i * img->width + j] = to_rgba(cur);
+			else pic->rgb[i * img->width + j] = to_rgb(cur);
 		}
 	}
 	
@@ -126,7 +124,7 @@ struct picture *from_bmp(char *path) {
 
 	read_bmp_data(file, &img);
 	
-	struct picture *res = create_picture(img.width, img.height);
+	struct picture *res = create_picture(img.width, img.height, img.bits_per_pixel);
 
 	populate_picture_array(res, &img);
 
