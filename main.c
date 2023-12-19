@@ -1,6 +1,7 @@
 #include "picture.h"
 #include "bmp.h"
 #include "colour.h"
+#include "processor.h"
 
 #include <stdio.h>
 
@@ -17,7 +18,8 @@ int main(int argc, char *argv[]) {
 	print_picture(pic);
 
 	if (argc == 1) {
-		pic->rgb[0] = (struct rgb) {128, 128, 128};
+		//pic->rgb[0] = (struct rgb) {128, 128, 128};
+		invert(pic);
 		to_bmp(pic, "./images/bmp/out.bmp");
 	}
 

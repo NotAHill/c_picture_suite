@@ -140,10 +140,6 @@ struct picture *from_bmp(char *path) {
 void to_bmp(struct picture *pic, char *path) {
 	FILE *file = open_file(path, "w");
 
-	// needs to have the following parts
-	// bitmap file header
-	// 14 bytes
-
 	struct {
 		char id[BMP_ID_SIZE];
 		uint32_t bmp_size;
