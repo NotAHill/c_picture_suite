@@ -18,5 +18,7 @@ void invert(struct picture *);
 void grayscale(struct picture *);
 void rotate(struct picture *, enum rotation_type);
 void flip(struct picture *, enum flip_direction);
+void blur(struct picture *);
+void identity(struct picture *);
 
 #endif //PROCESSOR_H

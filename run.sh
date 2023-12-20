@@ -1,6 +1,6 @@
 #!/bin/sh
 
-input="./images/bmp/test.bmp"
+input="./images/bmp/img.bmp"
 output="./images/bmp/out.bmp"
 
 make clean

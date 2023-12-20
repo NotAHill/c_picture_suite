@@ -14,12 +14,14 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	print_picture(pic);
+	//print_picture(pic);
 	//invert(pic);
 	//grayscale(pic);
 	//flip(pic, HORIZONTAL);
-	rotate(pic, CLOCKWISE);
-	print_picture(pic);
+	//rotate(pic, HALFTURN);
+	//identity(pic);
+	blur(pic);
+	//print_picture(pic);
 
 	to_bmp(pic, argv[2]);
 

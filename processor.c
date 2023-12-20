@@ -7,23 +7,57 @@
 #define UNUSED __attribute__((__unused__))
 #define SWAP(x, y) do { typeof(x) SWAP = x; x = y; y = SWAP; } while (0)
 
-static void foreach(struct picture *pic, void (*func)(struct rgba *, void *), void *arg) {
+static void foreach(struct picture *pic, void (*func)(struct picture *, int, int, void *), void *arg) {
 	for (int i = 0; i < pic->height; i++) {
 		for (int j = 0; j < pic->width; j++) {
-			(*func)(&pic->data[i * pic->width + j], arg);
+			(*func)(pic, i, j, arg);
 		}
 	}
 }
 
-static void invert_lambda(struct rgba *cur, void *varg UNUSED) {
+static void invert_lambda(struct picture *pic, int i, int j, void *varg UNUSED) {
+	struct rgba *cur = &pic->data[i * pic->width + j];
+
 	cur->red = 255.0 - cur->red;
 	cur->green = 255.0 - cur->green;
 	cur->blue = 255.0 - cur->blue;
 }
 
-static void grayscale_lambda(struct rgba *cur, void *varg UNUSED) {
+static void grayscale_lambda(struct picture *pic, int i, int j, void *varg UNUSED) {
+	struct rgba *cur = &pic->data[i * pic->width + j];
+
 	int avg = (cur->red + cur->green + cur->blue) / 3;
 	cur->red = cur->green = cur->blue = avg;
+}
+
+struct kernel_lambda_args {
+	int *matrix;
+	float scalar;
+};
+
+static void kernel_lambda(struct picture *pic, int i, int j, void *varg) {
+	if (i == 0 || j == 0 || i == pic->height - 1 || j == pic->width - 1) return;
+
+	struct kernel_lambda_args *kernel = (struct kernel_lambda_args *)varg;
+
+	struct rgba cur = {0, 0, 0, 0};
+
+	struct rgba *tmp;
+	float scale_factor;
+	for (int x = -1; x <= 1; x++) {
+		for (int y = -1; y <= 1; y++) {
+			tmp = &pic->data[(i + x) * pic->width + (j + y)];
+			scale_factor = kernel->scalar * kernel->matrix[(x + 1) * 3 + (y + 1)];
+			cur.red += (int)(tmp->red * scale_factor);
+			cur.green += (int)(tmp->green * scale_factor);
+			cur.blue +=(int)(tmp->blue * scale_factor);
+		}
+	}
+
+	struct rgba *res = &pic->data[i * pic->width + j];
+	res->red = cur.red;
+	res->green = cur.green;
+	res->blue = cur.blue;
 }
 
 void invert(struct picture *pic) {
@@ -81,3 +115,24 @@ void rotate(struct picture *pic, enum rotation_type rot) {
 		}
 	}
 }
+
+void blur(struct picture *pic) {
+	struct kernel_lambda_args kernel; 
+	int kernel_matrix[] = {1, 1, 1,
+					 	   1, 1, 1,
+					 	   1, 1, 1};
+	kernel.matrix = kernel_matrix;
+	kernel.scalar = 1.0f / 9;
+	foreach(pic, kernel_lambda, (void *)&kernel);
+}
+
+void identity(struct picture *pic) {
+	struct kernel_lambda_args kernel; 
+	int kernel_matrix[] = {0, 0, 0,
+					 	   0, 1, 0,
+					 	   0, 0, 0};
+	kernel.matrix = kernel_matrix;
+	kernel.scalar = 1.0f;
+	foreach(pic, kernel_lambda, (void *)&kernel);
+}
+
