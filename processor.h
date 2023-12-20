@@ -8,9 +8,15 @@ enum flip_direction {
 	VERTICAL
 };
 
+enum rotation_type {
+	CLOCKWISE,
+	HALFTURN,
+	ANTICLOCKWISE
+};
+
 void invert(struct picture *);
 void grayscale(struct picture *);
-void rotate(struct picture *, int);
+void rotate(struct picture *, enum rotation_type);
 void flip(struct picture *, enum flip_direction);
 
 #endif //PROCESSOR_H

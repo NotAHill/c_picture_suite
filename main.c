@@ -15,7 +15,10 @@ int main(int argc, char *argv[]) {
 	}
 	
 	print_picture(pic);
-	invert(pic);
+	//invert(pic);
+	//grayscale(pic);
+	//flip(pic, HORIZONTAL);
+	rotate(pic, CLOCKWISE);
 	print_picture(pic);
 
 	to_bmp(pic, argv[2]);
